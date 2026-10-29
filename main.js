@@ -4,34 +4,24 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-/* =========================================================================
-   DEVICE DETECT
-   ========================================================================= */
+/* ===== DEVICE ===== */
 const isMobile =
   /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent) ||
   (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
-/* =========================================================================
-   RENDER CAP: 1080p luôn — dù màn hình lớn hơn cũng chỉ render 1920x1080
-   ========================================================================= */
-const MAX_PIXELS = 1920 * 1080; // 2 073 600 pixel
+const MAX_PIXELS = 1920 * 1080;
 
-/* =========================================================================
-   QUALITY LEVELS (adaptive)
-   ========================================================================= */
 const QUALITY_LEVELS = [
   { name: 'Low',    pixelRatio: 0.60, bloom: false, bloomRes: 0.5,  scratchVis: 0.4 },
   { name: 'Medium', pixelRatio: 0.75, bloom: true,  bloomRes: 0.5,  scratchVis: 0.7 },
   { name: 'High',   pixelRatio: 0.90, bloom: true,  bloomRes: 0.75, scratchVis: 1.0 },
   { name: 'Ultra',  pixelRatio: 1.00, bloom: true,  bloomRes: 1.0,  scratchVis: 1.0 },
 ];
+let currentQuality = isMobile ? 2 : 3;
 
-let currentQuality = isMobile ? 2 : 3; // mobile khởi đầu High, desktop Ultra (1080p full)
-
-/* =========================================================================
-   RENDERER / SCENE / CAMERA
-   ========================================================================= */
+/* ===== RENDERER / SCENE / CAMERA ===== */
 const renderer = new THREE.WebGLRenderer({
   antialias: false,
   powerPreference: 'high-performance',
@@ -44,33 +34,24 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-  55,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  3000
-);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 3000);
 const aspect0 = window.innerWidth / window.innerHeight;
 camera.position.set(0, 7, aspect0 < 1 ? 34 : 24);
+scene.add(camera);
 
-/* =========================================================================
-   ORBIT CONTROLS (chuột + cảm ứng)
-   ========================================================================= */
+/* ===== ORBIT ===== */
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.rotateSpeed = isMobile ? 0.75 : 0.6;
-controls.zoomSpeed = 0.8;
-controls.minDistance = 4;
-controls.maxDistance = 120;
-controls.enablePan = false;
-controls.autoRotate = true;
+controls.enableDamping   = true;
+controls.dampingFactor   = 0.08;
+controls.rotateSpeed     = isMobile ? 0.75 : 0.6;
+controls.zoomSpeed       = 0.8;
+controls.minDistance     = 4;
+controls.maxDistance     = 120;
+controls.enablePan       = false;
+controls.autoRotate      = true;
 controls.autoRotateSpeed = 0.55;
 controls.target.set(0, 0, 0);
-controls.touches = {
-  ONE: THREE.TOUCH.ROTATE,
-  TWO: THREE.TOUCH.DOLLY_ROTATE
-};
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
 let idleTimer = null;
 function pauseAutoRotate() {
@@ -86,24 +67,15 @@ renderer.domElement.addEventListener('touchend',   resumeAutoRotateSoon, { passi
 renderer.domElement.addEventListener('mousedown',  pauseAutoRotate);
 window.addEventListener('mouseup', resumeAutoRotateSoon);
 
-/* =========================================================================
-   POST-PROCESSING
-   ========================================================================= */
+/* ===== COMPOSER ===== */
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
-const bloomPass = new UnrealBloomPass(
-  new THREE.Vector2(1, 1),
-  1.0,   // strength
-  0.7,   // radius
-  0.15   // threshold
-);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 1.0, 0.7, 0.15);
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
-/* =========================================================================
-   TEXTURES
-   ========================================================================= */
+/* ===== TEXTURES ===== */
 function makeDotTexture() {
   const s = 64;
   const cv = document.createElement('canvas');
@@ -141,9 +113,7 @@ function makeGlowTexture() {
 const dotTexture  = makeDotTexture();
 const glowTexture = makeGlowTexture();
 
-/* =========================================================================
-   GALAXY BACKGROUND
-   ========================================================================= */
+/* ===== GALAXY ===== */
 const galaxy = new THREE.Group();
 scene.add(galaxy);
 
@@ -156,9 +126,7 @@ scene.add(galaxy);
   const cMid   = new THREE.Color('#5f7bff');
   const cOuter = new THREE.Color('#b067ff');
 
-  const ARMS = 4;
-  const R_MIN = 10;
-  const R_MAX = 150;
+  const ARMS = 4, R_MIN = 10, R_MAX = 150;
 
   for (let i = 0; i < COUNT; i++) {
     const i3 = i * 3;
@@ -204,9 +172,7 @@ scene.add(galaxy);
   galaxy.add(new THREE.Points(geo, mat));
 })();
 
-/* =========================================================================
-   CORE GLOW (đốm sáng trung tâm)
-   ========================================================================= */
+/* ===== CORE ===== */
 const core = new THREE.Group();
 scene.add(core);
 
@@ -238,19 +204,21 @@ const halo = new THREE.Sprite(new THREE.SpriteMaterial({
 halo.scale.setScalar(34);
 core.add(halo);
 
-/* =========================================================================
-   ORBITING SCRATCHES
-   ========================================================================= */
+// Vùng chạm vô hình (bấm vào để warp)
+const hitSphere = new THREE.Mesh(
+  new THREE.SphereGeometry(3.2, 12, 12),
+  new THREE.MeshBasicMaterial({ visible: false })
+);
+core.add(hitSphere);
+/* ===== SCRATCHES (trắng, bo tròn 2 đầu) ===== */
 const scratchRoot = new THREE.Group();
 scene.add(scratchRoot);
 
 const SCRATCH_COUNT = isMobile ? 55 : 110;
-const SCRATCH_COLORS = [0xcfe6ff, 0xffffff, 0x9fb8ff, 0xffd6f2, 0x9ff5ff];
+const TUBE_SEGS = isMobile ? 20 : 36;
 const scratches = [];
 
-const TUBE_SEGS = isMobile ? 20 : 36;
-
-function buildScratchGeometry(length) {
+function buildScratchGeometry(length, thickness) {
   const segs = 10;
   const pts = [];
   const wob = 0.035 + Math.random() * 0.10;
@@ -269,8 +237,22 @@ function buildScratchGeometry(length) {
   }
 
   const curve = new THREE.CatmullRomCurve3(pts);
-  const thickness = 0.006 + Math.random() * 0.022;
-  return new THREE.TubeGeometry(curve, TUBE_SEGS, thickness, 5, false);
+  const tube = new THREE.TubeGeometry(curve, TUBE_SEGS, thickness, 5, false);
+
+  const p0 = curve.getPoint(0);
+  const p1 = curve.getPoint(1);
+  const capA = new THREE.SphereGeometry(thickness, 6, 4);
+  capA.translate(p0.x, p0.y, p0.z);
+  const capB = new THREE.SphereGeometry(thickness, 6, 4);
+  capB.translate(p1.x, p1.y, p1.z);
+
+  const merged = mergeGeometries([tube, capA, capB]);
+  if (!merged) {
+    capA.dispose(); capB.dispose();
+    return tube;
+  }
+  tube.dispose(); capA.dispose(); capB.dispose();
+  return merged;
 }
 
 for (let i = 0; i < SCRATCH_COUNT; i++) {
@@ -288,10 +270,11 @@ for (let i = 0; i < SCRATCH_COUNT; i++) {
 
   const radius = 2.2 + Math.pow(Math.random(), 0.7) * 13;
   const length = 0.8 + Math.random() * 3.6;
+  const thickness = 0.006 + Math.random() * 0.022;
 
-  const geo = buildScratchGeometry(length);
+  const geo = buildScratchGeometry(length, thickness);
   const mat = new THREE.MeshBasicMaterial({
-    color: SCRATCH_COLORS[(Math.random() * SCRATCH_COLORS.length) | 0],
+    color: 0xffffff,
     transparent: true,
     opacity: 0.25 + Math.random() * 0.55,
     depthWrite: false,
@@ -316,7 +299,7 @@ for (let i = 0; i < SCRATCH_COUNT; i++) {
   });
 }
 
-/* Vòng sáng mờ */
+// Vòng sáng mờ
 const ring = new THREE.Mesh(
   new THREE.RingGeometry(1.6, 1.75, 128),
   new THREE.MeshBasicMaterial({
@@ -331,9 +314,167 @@ const ring = new THREE.Mesh(
 ring.rotation.x = Math.PI / 2;
 scene.add(ring);
 
-/* =========================================================================
-   DEBUG OVERLAY (đè phím D để ẩn/hiện)
-   ========================================================================= */
+/* ===== WARP STREAKS ===== */
+const WARP_STREAK_COUNT = isMobile ? 320 : 550;
+const warpGroup = new THREE.Group();
+camera.add(warpGroup);
+
+const warpPositions = new Float32Array(WARP_STREAK_COUNT * 6);
+const warpStreaks = [];
+
+function resetWarpStreak(s, initial = false) {
+  const angle  = Math.random() * Math.PI * 2;
+  const radius = (2 + Math.random() * Math.random() * 34);
+  s.x = Math.cos(angle) * radius;
+  s.y = Math.sin(angle) * radius * 0.75;
+  s.z = initial ? (-30 - Math.random() * 130) : (-100 - Math.random() * 60);
+  s.speed  = 130 + Math.random() * 180;
+  s.length = 2 + Math.random() * 16;
+}
+
+for (let i = 0; i < WARP_STREAK_COUNT; i++) {
+  const s = { x: 0, y: 0, z: 0, speed: 0, length: 0 };
+  resetWarpStreak(s, true);
+  warpStreaks.push(s);
+}
+
+const warpStreakGeo = new THREE.BufferGeometry();
+warpStreakGeo.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
+
+const warpStreakMat = new THREE.LineBasicMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 0,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  depthTest: false
+});
+const warpStreakMesh = new THREE.LineSegments(warpStreakGeo, warpStreakMat);
+warpStreakMesh.frustumCulled = false;
+warpGroup.add(warpStreakMesh);
+
+/* ===== WARP STATE ===== */
+const WARP_DURATION = 1.6;
+let warpActive    = false;
+let warpStartTime = 0;
+const warpStartPos = new THREE.Vector3();
+const warpEndPos   = new THREE.Vector3();
+
+function triggerWarp() {
+  if (warpActive) return;
+  warpActive    = true;
+  warpStartTime = time;
+  warpStartPos.copy(camera.position);
+
+  const dir  = new THREE.Vector3().subVectors(controls.target, camera.position).normalize();
+  const dist = camera.position.distanceTo(controls.target);
+  const endDist = Math.max(3, dist * 0.28);
+  warpEndPos.copy(controls.target).addScaledVector(dir, -endDist);
+
+  controls.enabled    = false;
+  controls.autoRotate = false;
+
+  for (let i = 0; i < warpStreaks.length; i++) resetWarpStreak(warpStreaks[i], true);
+}
+
+function smoothstep(t) {
+  t = Math.max(0, Math.min(1, t));
+  return t * t * (3 - 2 * t);
+}
+
+function updateWarp(dt) {
+  if (!warpActive) return;
+
+  const t = (time - warpStartTime) / WARP_DURATION;
+
+  if (t >= 1) {
+    camera.position.copy(warpStartPos);
+    warpActive = false;
+    controls.enabled = true;
+    controls.autoRotate = true;
+    warpStreakMat.opacity = 0;
+    return;
+  }
+
+  let intensity;
+  if (t < 0.35) intensity = smoothstep(t / 0.35);
+  else if (t < 0.75) intensity = 1;
+  else intensity = 1 - smoothstep((t - 0.75) / 0.25);
+
+  const dashEase = t < 0.30
+    ? smoothstep(t / 0.30)
+    : 1 - smoothstep((t - 0.30) / 0.70);
+  camera.position.lerpVectors(warpStartPos, warpEndPos, dashEase);
+
+  warpStreakMat.opacity = intensity;
+  const intensitySpeedBoost = 1 + intensity * 1.5;
+
+  for (let i = 0; i < warpStreaks.length; i++) {
+    const s = warpStreaks[i];
+    s.z += s.speed * intensitySpeedBoost * dt;
+    if (s.z > 6) resetWarpStreak(s, false);
+
+    const i6 = i * 6;
+    warpPositions[i6]     = s.x;
+    warpPositions[i6 + 1] = s.y;
+    warpPositions[i6 + 2] = s.z;
+    const visualLen = s.length * (0.4 + intensity * 1.6);
+    warpPositions[i6 + 3] = s.x;
+    warpPositions[i6 + 4] = s.y;
+    warpPositions[i6 + 5] = s.z - visualLen;
+  }
+  warpStreakGeo.attributes.position.needsUpdate = true;
+}
+
+/* ===== CLICK / TAP ===== */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let pointerDownInfo = null;
+let activePointers = 0;
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  activePointers++;
+  if (activePointers === 1) {
+    pointerDownInfo = { x: e.clientX, y: e.clientY, t: performance.now() };
+  } else {
+    pointerDownInfo = null;
+  }
+});
+
+renderer.domElement.addEventListener('pointerup', (e) => {
+  activePointers = Math.max(0, activePointers - 1);
+  if (activePointers > 0) { pointerDownInfo = null; return; }
+  if (!pointerDownInfo) return;
+
+  const dx = e.clientX - pointerDownInfo.x;
+  const dy = e.clientY - pointerDownInfo.y;
+  const dt = performance.now() - pointerDownInfo.t;
+  pointerDownInfo = null;
+
+  if (dx * dx + dy * dy > 100 || dt > 400) return;
+
+  ndc.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+  ndc.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  if (raycaster.intersectObject(hitSphere, false).length > 0) triggerWarp();
+});
+
+renderer.domElement.addEventListener('pointercancel', () => {
+  activePointers = 0;
+  pointerDownInfo = null;
+});
+
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  if (warpActive) { renderer.domElement.style.cursor = 'default'; return; }
+  ndc.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+  ndc.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  renderer.domElement.style.cursor =
+    raycaster.intersectObject(hitSphere, false).length > 0 ? 'pointer' : 'grab';
+});
+
+/* ===== DEBUG OVERLAY ===== */
 const debugEl = document.createElement('div');
 debugEl.style.cssText = `
   position: fixed;
@@ -359,81 +500,59 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('hint').textContent = isMobile
-  ? 'Kéo để quay · Chụm 2 ngón để zoom'
-  : 'Kéo chuột để quay · Lăn chuột để zoom · D: FPS';
+  ? 'Kéo để quay · Chụm 2 ngón để zoom · Chạm đốm sáng để warp'
+  : 'Kéo chuột để quay · Lăn để zoom · Click đốm sáng để warp · D: FPS';
 
-/* =========================================================================
-   RENDER SIZE — luôn ≤ 1080p
-   ========================================================================= */
+/* ===== RESIZE / QUALITY ===== */
 function updateRenderSize() {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
   const q  = QUALITY_LEVELS[currentQuality];
-
   const dpr   = window.devicePixelRatio || 1;
-  const maxPr = Math.sqrt(MAX_PIXELS / (vw * vh)); // hệ số tối đa để không vượt 1080p
+  const maxPr = Math.sqrt(MAX_PIXELS / (vw * vh));
   const pr    = Math.min(dpr, maxPr) * q.pixelRatio;
 
-  // Renderer
   renderer.setPixelRatio(pr);
   renderer.setSize(vw, vh, false);
   renderer.domElement.style.width  = '100%';
   renderer.domElement.style.height = '100%';
 
-  // Composer render target = vw*pr × vh*pr
   composer.setPixelRatio(pr);
   composer.setSize(vw, vh);
 
-  // Bloom resolution — override sau composer.setSize
   const bw = Math.max(2, Math.round(vw * pr * q.bloomRes));
   const bh = Math.max(2, Math.round(vh * pr * q.bloomRes));
   bloomPass.setSize(bw, bh);
   bloomPass.enabled = q.bloom;
 
-  // Số vết xước hiển thị theo quality
   const visCount = Math.max(1, Math.round(scratches.length * q.scratchVis));
   for (let i = 0; i < scratches.length; i++) {
     scratches[i].mesh.visible = i < visCount;
   }
 
-  // Camera luôn theo aspect viewport (CSS pixel), không theo buffer
   camera.aspect = vw / vh;
   camera.updateProjectionMatrix();
 
-  const bufW = Math.round(vw * pr);
-  const bufH = Math.round(vh * pr);
-  console.log(
-    `[Quality: ${q.name}] buffer ${bufW}×${bufH} @ ${pr.toFixed(2)}x · bloom ${q.bloom ? (bw + '×' + bh) : 'off'}`
-  );
+  console.log(`[Quality: ${q.name}] ${Math.round(vw*pr)}×${Math.round(vh*pr)} @ ${pr.toFixed(2)}x`);
 }
 
-/* =========================================================================
-   ADAPTIVE FPS
-   ========================================================================= */
+/* ===== ADAPTIVE FPS ===== */
 const startTime = performance.now();
-let smoothedFps        = 60;
-let lastCheckTime      = performance.now();
-let framesSinceCheck   = 0;
-let consecutiveLow     = 0;
-let consecutiveHigh    = 0;
-let lastQualityChange  = 0;
+let smoothedFps = 60, lastCheckTime = performance.now(), framesSinceCheck = 0;
+let consecutiveLow = 0, consecutiveHigh = 0, lastQualityChange = 0;
 const levelDowngradeTime = {};
 
-const WARMUP_MS              = 2000;
-const CHECK_INTERVAL_MS      = 500;
-const CHANGE_COOLDOWN_MS     = 2000;
-const DOWNGRADE_FPS          = 45;
-const UPGRADE_FPS            = 57;
-const DOWNGRADE_CONSECUTIVE  = 2;   // 2 × 500ms  = 1s dưới 45 FPS → hạ
-const UPGRADE_CONSECUTIVE    = 10;  // 10 × 500ms = 5s trên 57 FPS → nâng
-const UPGRADE_COOLDOWN_MS    = 30000; // 30s không nâng lại level vừa bị hạ
+const WARMUP_MS            = 2000;
+const CHECK_INTERVAL_MS    = 500;
+const CHANGE_COOLDOWN_MS   = 2000;
+const DOWNGRADE_FPS        = 45;
+const UPGRADE_FPS          = 57;
+const DOWNGRADE_CONSECUTIVE = 2;
+const UPGRADE_CONSECUTIVE   = 10;
+const UPGRADE_COOLDOWN_MS   = 30000;
 
 function resetFpsMeasure() {
-  smoothedFps      = 60;
-  lastCheckTime    = performance.now();
-  framesSinceCheck = 0;
-  consecutiveLow   = 0;
-  consecutiveHigh  = 0;
+  smoothedFps = 60; lastCheckTime = performance.now(); framesSinceCheck = 0;
+  consecutiveLow = 0; consecutiveHigh = 0;
 }
 
 function adaptiveTick() {
@@ -441,64 +560,47 @@ function adaptiveTick() {
   const now = performance.now();
   const elapsed = now - lastCheckTime;
 
-  if (elapsed >= CHECK_INTERVAL_MS) {
-    const instFps = framesSinceCheck * 1000 / elapsed;
-    smoothedFps = smoothedFps * 0.6 + instFps * 0.4;
-    framesSinceCheck = 0;
-    lastCheckTime = now;
+  if (elapsed < CHECK_INTERVAL_MS) return;
 
-    debugEl.textContent =
-      `${smoothedFps.toFixed(0)} FPS · ${QUALITY_LEVELS[currentQuality].name}` +
-      (QUALITY_LEVELS[currentQuality].bloom ? ' · bloom' : ' · no-bloom');
+  const instFps = framesSinceCheck * 1000 / elapsed;
+  smoothedFps = smoothedFps * 0.6 + instFps * 0.4;
+  framesSinceCheck = 0;
+  lastCheckTime = now;
 
-    if (now - startTime < WARMUP_MS)          return;
-    if (now - lastQualityChange < CHANGE_COOLDOWN_MS) return;
+  debugEl.textContent =
+    `${smoothedFps.toFixed(0)} FPS · ${QUALITY_LEVELS[currentQuality].name}` +
+    (QUALITY_LEVELS[currentQuality].bloom ? ' · bloom' : ' · no-bloom');
 
-    if (smoothedFps < DOWNGRADE_FPS) {
-      consecutiveLow++;  consecutiveHigh = 0;
-    } else if (smoothedFps > UPGRADE_FPS) {
-      consecutiveHigh++; consecutiveLow  = 0;
-    } else {
-      consecutiveLow = 0; consecutiveHigh = 0;
-    }
+  if (now - startTime < WARMUP_MS) return;
+  if (now - lastQualityChange < CHANGE_COOLDOWN_MS) return;
 
-    // Hạ chất lượng
-    if (consecutiveLow >= DOWNGRADE_CONSECUTIVE && currentQuality > 0) {
-      levelDowngradeTime[currentQuality] = now;
-      currentQuality--;
-      updateRenderSize();
-      lastQualityChange = now;
-      resetFpsMeasure();
-      console.log(`↓ Hạ xuống ${QUALITY_LEVELS[currentQuality].name}`);
-      return;
-    }
+  if (smoothedFps < DOWNGRADE_FPS) { consecutiveLow++;  consecutiveHigh = 0; }
+  else if (smoothedFps > UPGRADE_FPS) { consecutiveHigh++; consecutiveLow  = 0; }
+  else { consecutiveLow = 0; consecutiveHigh = 0; }
 
-    // Nâng chất lượng (chống dao động: không nâng lại level vừa bị hạ trong 30s)
-    if (consecutiveHigh >= UPGRADE_CONSECUTIVE &&
-        currentQuality < QUALITY_LEVELS.length - 1) {
-      const targetLevel = currentQuality + 1;
-      const dgTime = levelDowngradeTime[targetLevel];
-      if (dgTime && now - dgTime < UPGRADE_COOLDOWN_MS) {
-        consecutiveHigh = 0;
-        return;
-      }
-      currentQuality = targetLevel;
-      updateRenderSize();
-      lastQualityChange = now;
-      resetFpsMeasure();
-      console.log(`↑ Nâng lên ${QUALITY_LEVELS[currentQuality].name}`);
-    }
+  if (consecutiveLow >= DOWNGRADE_CONSECUTIVE && currentQuality > 0) {
+    levelDowngradeTime[currentQuality] = now;
+    currentQuality--;
+    updateRenderSize();
+    lastQualityChange = now;
+    resetFpsMeasure();
+    return;
+  }
+  if (consecutiveHigh >= UPGRADE_CONSECUTIVE && currentQuality < QUALITY_LEVELS.length - 1) {
+    const targetLevel = currentQuality + 1;
+    const dgTime = levelDowngradeTime[targetLevel];
+    if (dgTime && now - dgTime < UPGRADE_COOLDOWN_MS) { consecutiveHigh = 0; return; }
+    currentQuality = targetLevel;
+    updateRenderSize();
+    lastQualityChange = now;
+    resetFpsMeasure();
   }
 }
 
-/* =========================================================================
-   INIT
-   ========================================================================= */
+/* ===== INIT ===== */
 updateRenderSize();
 
-/* =========================================================================
-   ANIMATE
-   ========================================================================= */
+/* ===== ANIMATE ===== */
 const clock = new THREE.Clock();
 let time = 0;
 
@@ -508,36 +610,30 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05);
   time += dt;
 
-  // Đốm sáng nhịp đập
   const pulse = 1 + Math.sin(time * 1.7) * 0.05 + Math.sin(time * 4.3) * 0.02;
   core.scale.setScalar(pulse);
   glowSprite.material.opacity = 0.85 + Math.sin(time * 2.1) * 0.10;
   halo.material.opacity       = 0.40 + Math.sin(time * 1.1 + 1.5) * 0.08;
 
-  // Ngân hà quay rất chậm
   galaxy.rotation.y += dt * 0.012;
   galaxy.rotation.x  = Math.sin(time * 0.05) * 0.03;
+  ring.rotation.z   += dt * 0.15;
 
-  ring.rotation.z += dt * 0.15;
-
-  // Vết xước quay quanh đốm sáng
   for (let i = 0; i < scratches.length; i++) {
     const s = scratches[i];
-    if (!s.mesh.visible) continue; // bỏ qua update cho mesh bị ẩn (vẫn tiết kiệm chút CPU)
+    if (!s.mesh.visible) continue;
     s.spinner.rotation.y += s.speed * dt;
     s.mat.opacity = s.baseOpacity * (0.55 + 0.45 * Math.sin(time * s.flicker + s.phase));
   }
 
-  controls.update();
+  updateWarp(dt);
+  if (!warpActive) controls.update();
   composer.render();
-
   adaptiveTick();
 }
 animate();
 
-/* =========================================================================
-   RESIZE
-   ========================================================================= */
+/* ===== RESIZE / VISIBILITY ===== */
 let resizeTimeout;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
@@ -546,13 +642,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('orientationchange', () => {
   setTimeout(updateRenderSize, 300);
 });
-
-/* Tạm dừng khi tab bị ẩn (tiết kiệm pin) */
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    clock.stop();
-  } else {
-    clock.start();
-    resetFpsMeasure();
-  }
+  if (document.hidden) clock.stop();
+  else { clock.start(); resetFpsMeasure(); }
 });
