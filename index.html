@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<title>Galaxy · Orbiting Scratches</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas { display: block; touch-action: none; outline: none; }
+  #hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    font: 12px/1.4 system-ui, -apple-system, sans-serif;
+    color: #7fa8d8;
+    letter-spacing: .5px;
+    opacity: .65;
+    pointer-events: none;
+    user-select: none;
+    text-align: center;
+    white-space: nowrap;
+    padding: 0 12px;
+  }
+  @media (max-width: 600px) { #hint { font-size: 11px; } }
+</style>
+</head>
+<body>
+<div id="hint"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>
