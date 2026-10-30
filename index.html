@@ -3,66 +3,48 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Vườn Hoa Vô Tận - FOV 120°</title>
+<title>Vườn Hoa Vô Tận - Mobile</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#05080f;
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none}
-  #scene{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
-  #scene:active{cursor:grabbing}
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; height: 100dvh; overflow: hidden; background: #05080f; font-family: system-ui, -apple-system, sans-serif; user-select: none; }
+  #scene { display: block; width: 100%; height: 100%; touch-action: none; }
 
-  #hud{position:fixed;top:10px;left:12px;color:#fff;font-size:13px;line-height:1.55;
-    text-shadow:0 1px 4px #000;pointer-events:none;z-index:10}
-  #hud b{color:#8fffb0;font-weight:600}
-  #hint{opacity:.75;font-size:11.5px;max-width:260px}
+  #hud { position: fixed; top: 10px; left: 12px; color: #fff; font-size: 13px; line-height: 1.5; text-shadow: 0 1px 4px #000; pointer-events: none; z-index: 10; }
+  #hud b { color: #8fffb0; font-weight: 600; }
+  #hint { opacity: 0.75; font-size: 11px; max-width: 260px; }
 
-  #menu{position:fixed;right:12px;bottom:12px;width:300px;max-height:82vh;overflow-y:auto;
-    background:rgba(10,16,26,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 16px;
-    color:#eaf2ff;font-size:13px;box-shadow:0 16px 50px rgba(0,0,0,.55);
-    transform-origin:bottom right;transition:opacity .25s ease,transform .25s ease;z-index:20}
-  #menu.hidden{opacity:0;transform:scale(.86) translateY(24px);pointer-events:none}
-  #menu::-webkit-scrollbar{width:6px}
-  #menu::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
+  #menu { position: fixed; right: 12px; bottom: 12px; width: 300px; max-height: 80vh; overflow-y: auto; background: rgba(10, 16, 26, 0.9); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.14); border-radius: 18px; padding: 14px; color: #eaf2ff; font-size: 13px; box-shadow: 0 16px 50px rgba(0,0,0,0.55); transform-origin: bottom right; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 20; }
+  #menu.hidden { opacity: 0; transform: scale(0.86) translateY(24px); pointer-events: none; }
+  #menu::-webkit-scrollbar { width: 6px; }
+  #menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
 
-  .title{font-weight:700;font-size:14px;letter-spacing:.5px;margin-bottom:10px;
-    background:linear-gradient(90deg,#ff9ecb,#9ad0ff,#b6ff9e);-webkit-background-clip:text;
-    background-clip:text;color:transparent}
-  .group{margin-bottom:12px}
-  .label{font-size:11.5px;opacity:.7;margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
-  .btns{display:flex;flex-wrap:wrap;gap:6px}
-  .btn{flex:1 1 auto;min-width:64px;padding:8px 6px;border-radius:10px;cursor:pointer;
-    border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dfe9ff;
-    font-size:12px;font-family:inherit;transition:.15s}
-  .btn:hover{background:rgba(255,255,255,.14)}
-  .btn.active{background:linear-gradient(135deg,#4fa8ff,#8f6bff);border-color:transparent;
-    color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(90,140,255,.45)}
+  .title { font-weight: 700; font-size: 14px; margin-bottom: 10px; background: linear-gradient(90deg, #ff9ecb, #9ad0ff, #b6ff9e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .group { margin-bottom: 12px; }
+  .label { font-size: 11.5px; opacity: 0.7; margin-bottom: 6px; text-transform: uppercase; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .btn { flex: 1 1 auto; min-width: 64px; padding: 8px 6px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #dfe9ff; font-size: 12px; font-family: inherit; transition: 0.15s; }
+  .btn:hover { background: rgba(255,255,255,0.14); }
+  .btn.active { background: linear-gradient(135deg, #4fa8ff, #8f6bff); border-color: transparent; color: #fff; font-weight: 600; }
 
-  input[type=range]{width:100%;height:24px;margin:2px 0 6px;background:transparent;
-    -webkit-appearance:none;appearance:none;cursor:pointer}
-  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;
-    background:linear-gradient(90deg,#1a2a45,#3b7fd4,#ffd166,#3b7fd4,#1a2a45)}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
-    border-radius:50%;background:#fff;margin-top:-6px;box-shadow:0 2px 8px rgba(0,0,0,.6)}
-  input[type=range]::-moz-range-track{height:6px;border-radius:3px;
-    background:linear-gradient(90deg,#1a2a45,#3b7fd4,#ffd166,#3b7fd4,#1a2a45)}
-  input[type=range]::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:#fff}
+  input[type=range] { width: 100%; height: 24px; margin: 2px 0 6px; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #1a2a45, #3b7fd4, #ffd166, #3b7fd4, #1a2a45); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; margin-top: -6px; box-shadow: 0 2px 8px rgba(0,0,0,0.6); }
 
-  @media (max-width:480px){#menu{width:calc(100% - 24px);max-height:58vh}}
+  #error-box { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.9); color: #fff; padding: 10px; font-size: 12px; z-index: 9999; display: none; word-wrap: break-word; }
+  @media (max-width: 480px) { #menu { width: calc(100% - 24px); max-height: 60vh; } }
 </style>
 </head>
 <body>
+<div id="error-box"></div>
 <canvas id="scene"></canvas>
 
 <div id="hud">
-  <div><b>FPS:</b> <span id="fps">--</span> / 120</div>
-  <div id="hint">WASD / mũi tên di chuyển · Kéo chuột hoặc chạm để nhìn ·<br>
-  <b>Chạm 3 ngón 3 lần</b> để mở menu (hoặc phím M)</div>
+  <div><b>FPS:</b> <span id="fps">--</span></div>
+  <div id="hint">Kéo để nhìn · Chạm 3 ngón 3 lần để mở Menu</div>
 </div>
 
 <div id="menu" class="hidden">
   <div class="title">🌷 TÙY CHỈNH KHU VƯỜN</div>
-
   <div class="group">
     <div class="label">Thời tiết</div>
     <div class="btns">
@@ -71,7 +53,6 @@
       <button class="btn" data-weather="snow">❄️ Tuyết</button>
     </div>
   </div>
-
   <div class="group">
     <div class="label">Mùa</div>
     <div class="btns">
@@ -81,21 +62,19 @@
       <button class="btn" data-season="winter">❄️ Đông</button>
     </div>
   </div>
-
   <div class="group">
     <div class="label">Thời gian — <span id="timeLabel">12:00</span></div>
-    <input id="timeSlider" type="range" min="0" max="24" step="0.05" value="12" />
+    <input id="timeSlider" type="range" min="0" max="24" step="0.1" value="12" />
     <div class="btns">
       <button class="btn" data-time="day">🌞 Ngày</button>
       <button class="btn" data-time="night">🌙 Đêm</button>
       <button class="btn" data-time="auto">🔄 Tự động</button>
     </div>
   </div>
-
   <div class="group">
     <div class="label">Cực quang</div>
     <div class="btns">
-      <button class="btn" id="auroraBtn">Tắt</button>
+      <button class="btn" id="auroraBtn">Bật / Tắt</button>
     </div>
   </div>
 </div>
@@ -103,11 +82,463 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
   }
 }
 </script>
-<script type="module" src="script.js"></script>
+<script type="module">
+// Bắt lỗi và hiển thị lên màn hình (nếu có)
+window.addEventListener('error', (e) => {
+  const errBox = document.getElementById('error-box');
+  errBox.style.display = 'block';
+  errBox.innerText = 'Lỗi: ' + (e.message || 'Không thể tải thư viện 3D. Vui lòng kiểm tra mạng.');
+});
+
+import * as THREE from 'three';
+
+/* ═══════ 1. TRẠNG THÁI ═══════ */
+const state = { weather: 'clear', season: 'spring', hour: 12, autoTime: false, aurora: false };
+const SEASONS = {
+  spring: { flowers: [0xff8fc4, 0xffd6e8, 0xfff2a8, 0xc9a7ff, 0xffffff], grass: 0x74c04a, foliage: 0x9ada5a, ground: 0x4e8f3a },
+  summer: { flowers: [0xff2f55, 0xffd400, 0xff8a00, 0xb44dff, 0xff1f9c], grass: 0x3f9a2a, foliage: 0x2f7a25, ground: 0x3a7a28 },
+  autumn: { flowers: [0xff8c1a, 0xe03c1c, 0xffc107, 0xb05a1e, 0xd4a017], grass: 0x9a8f3a, foliage: 0xd2691e, ground: 0x86763a },
+  winter: { flowers: [0xffffff, 0xd6ecff, 0xaecbff, 0xeaf5ff], grass: 0xa8b8c6, foliage: 0xd8e2ea, ground: 0xe2edf6 },
+};
+
+/* ═══════ 2. RENDERER & SCENE ═══════ */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); 
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x9fc4e8, 20, 80);
+
+const camera = new THREE.PerspectiveCamera(120, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.rotation.order = 'YXZ';
+const player = { x: 0, z: 0, yaw: 0, pitch: 0, eye: 1.6, speed: 8 };
+
+/* ═══════ 3. SHADER GIÓ ═══════ */
+const timeU = { value: 0 };
+const windU = { value: new THREE.Vector2(1.0, 0.35) };
+
+function windify(mat, amp) {
+  const A = amp.toFixed(3);
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = timeU;
+    shader.uniforms.uWind = windU;
+    shader.vertexShader = 'uniform float uTime;\nuniform vec2 uWind;\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `
+      vec3 transformed = vec3( position );
+      #ifdef USE_INSTANCING
+        vec3 wOrigin = ( modelMatrix * instanceMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
+      #else
+        vec3 wOrigin = ( modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
+      #endif
+      float swayH = max( transformed.y, 0.0 );
+      float ph = uTime * 1.5 + wOrigin.x * 0.5 + wOrigin.z * 0.3;
+      float sw = sin( ph ) + 0.3 * sin( ph * 2.0 + 1.0 );
+      float k = swayH * swayH * ${A};
+      transformed.x += sw * k * uWind.x;
+      transformed.z += sw * k * uWind.y;
+      `
+    );
+  };
+  mat.customProgramCacheKey = () => 'wind_' + A;
+  return mat;
+}
+
+/* ═══════ 4. HÌNH HỌC (TỐI ƯU MOBILE) ═══════ */
+const stemGeo = new THREE.CylinderGeometry(0.015, 0.025, 0.6, 4, 1);
+stemGeo.translate(0, 0.3, 0);
+const bloomGeo = new THREE.SphereGeometry(0.11, 5, 4);
+bloomGeo.scale(1, 0.6, 1);
+bloomGeo.translate(0, 0.6, 0);
+const centerGeo = new THREE.SphereGeometry(0.04, 4, 3);
+centerGeo.translate(0, 0.6, 0);
+const grassGeo = new THREE.PlaneGeometry(0.1, 0.8);
+grassGeo.translate(0, 0.4, 0);
+const trunkGeo = new THREE.CylinderGeometry(0.15, 0.25, 2.5, 5, 1);
+trunkGeo.translate(0, 1.25, 0);
+const foliageGeo = new THREE.IcosahedronGeometry(1.3, 0);
+foliageGeo.translate(0, 3.0, 0);
+
+/* ═══════ 5. MATERIAL ═══════ */
+const stemMat = windify(new THREE.MeshLambertMaterial({ color: 0x3f7a2a }), 0.10);
+const bloomMat = windify(new THREE.MeshLambertMaterial({ color: 0xffffff }), 0.10);
+const centerMat = new THREE.MeshBasicMaterial({ color: 0x3a2a05 });
+const grassMat = windify(new THREE.MeshLambertMaterial({ color: 0x74c04a, side: THREE.DoubleSide }), 0.30);
+const trunkMat = new THREE.MeshLambertMaterial({ color: 0x5b3f28 });
+const foliageMat = windify(new THREE.MeshLambertMaterial({ color: 0x9ada5a }), 0.005);
+
+/* ═══════ 6. BẦU TRỜI ═══════ */
+const skyU = {
+  uTop: { value: new THREE.Color(0x2a6fd6) }, uBottom: { value: new THREE.Color(0xbcd8f0) },
+  uSunColor: { value: new THREE.Color(0xfff2cc) }, uSunDir: { value: new THREE.Vector3(0, 1, 0) },
+  uStars: { value: 0 }, uAurora: { value: 0 }, uTime: { value: 0 }
+};
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: skyU, side: THREE.BackSide, depthWrite: false,
+  vertexShader: `varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform vec3 uTop, uBottom, uSunColor, uSunDir;
+    uniform float uStars, uAurora, uTime;
+    varying vec3 vDir;
+    float hash(vec3 p){ p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+    void main() {
+      vec3 d = normalize(vDir); float h = d.y;
+      vec3 col = mix(uBottom, uTop, smoothstep(-0.08, 0.58, h));
+      float sd = max(dot(d, normalize(uSunDir)), 0.0);
+      col += uSunColor * pow(sd, 900.0) * 3.0;
+      col += uSunColor * pow(sd, 14.0) * 0.25;
+      if (uStars > 0.01 && h > 0.0) {
+        float n = hash(floor(d * 260.0));
+        float star = smoothstep(0.995, 1.0, n) * (0.55 + 0.45 * sin(uTime * 4.0 + n * 90.0));
+        col += vec3(0.9, 0.95, 1.0) * star * uStars * smoothstep(0.0, 0.18, h);
+      }
+      if (uAurora > 0.01 && h > 0.0) {
+        float ang = atan(d.z, d.x);
+        float w = sin(ang * 3.0 + uTime * 0.3) * 0.5 + 0.5;
+        float g = exp(-pow((h - (0.22 + 0.28 * w)) / 0.17, 2.0));
+        col += mix(vec3(0.1, 1.0, 0.55), vec3(0.65, 0.25, 1.0), w) * g * uAurora * 1.2;
+      }
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(500, 16, 12), skyMat);
+sky.frustumCulled = false; scene.add(sky);
+
+/* ═══════ 7. ĐÈN & MẶT ĐẤT ═══════ */
+const sunLight = new THREE.DirectionalLight(0xffffff, 2.0); scene.add(sunLight);
+const hemiLight = new THREE.HemisphereLight(0x9ec8ff, 0x3a5a2a, 0.8); scene.add(hemiLight);
+
+const groundMat = new THREE.MeshLambertMaterial({ color: 0x4e8f3a });
+const groundGeo = new THREE.PlaneGeometry(2000, 2000);
+groundGeo.rotateX(-Math.PI / 2);
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.position.y = -0.02; scene.add(ground);
+
+/* ═══════ 8. CHUNK VÔ TẬN ═══════ */
+const CHUNK = 50; const RADIUS = 1;
+const chunks = new Map();
+let curCX = null, curCZ = null;
+const dummy = new THREE.Object3D();
+const tmpColor = new THREE.Color();
+
+function hash2(x, y) {
+  let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+function rng(a) {
+  return function() { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+
+function buildChunk(cx, cz) {
+  const group = new THREE.Group();
+  group.position.set(cx * CHUNK, 0, cz * CHUNK);
+  const rnd = rng(hash2(cx, cz));
+  const S = SEASONS[state.season];
+  const isWinter = state.season === 'winter';
+
+  const nF = Math.round((isWinter ? 20 : 60) + rnd() * 30);
+  if (nF > 0) {
+    const stems = new THREE.InstancedMesh(stemGeo, stemMat, nF);
+    const blooms = new THREE.InstancedMesh(bloomGeo, bloomMat, nF);
+    const centers = new THREE.InstancedMesh(centerGeo, centerMat, nF);
+    for (let i = 0; i < nF; i++) {
+      dummy.position.set((rnd() - 0.5) * CHUNK, 0, (rnd() - 0.5) * CHUNK);
+      dummy.rotation.set(0, rnd() * Math.PI * 2, 0);
+      const s = 0.8 + rnd() * 0.6;
+      dummy.scale.set(s, s, s);
+      dummy.updateMatrix();
+      stems.setMatrixAt(i, dummy.matrix);
+      blooms.setMatrixAt(i, dummy.matrix);
+      centers.setMatrixAt(i, dummy.matrix);
+      tmpColor.setHex(S.flowers[(rnd() * S.flowers.length) | 0]);
+      blooms.setColorAt(i, tmpColor);
+    }
+    group.add(stems, blooms, centers);
+  }
+
+  const nG = Math.round(isWinter ? 80 : 200);
+  const grass = new THREE.InstancedMesh(grassGeo, grassMat, nG);
+  for (let i = 0; i < nG; i++) {
+    dummy.position.set((rnd() - 0.5) * CHUNK, 0, (rnd() - 0.5) * CHUNK);
+    dummy.rotation.set(0, rnd() * Math.PI * 2, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    grass.setMatrixAt(i, dummy.matrix);
+  }
+  group.add(grass);
+
+  if (rnd() < 0.5) {
+    const nT = 1 + Math.floor(rnd() * 2);
+    const trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, nT);
+    const leaves = new THREE.InstancedMesh(foliageGeo, foliageMat, nT);
+    for (let i = 0; i < nT; i++) {
+      dummy.position.set((rnd() - 0.5) * CHUNK, 0, (rnd() - 0.5) * CHUNK);
+      dummy.rotation.set(0, rnd() * Math.PI * 2, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      trunks.setMatrixAt(i, dummy.matrix);
+      leaves.setMatrixAt(i, dummy.matrix);
+    }
+    group.add(trunks, leaves);
+  }
+  scene.add(group);
+  return { group };
+}
+
+function updateChunks() {
+  const pcx = Math.floor(player.x / CHUNK);
+  const pcz = Math.floor(player.z / CHUNK);
+  if (pcx === curCX && pcz === curCZ) return;
+  curCX = pcx; curCZ = pcz;
+  const need = new Set();
+  for (let i = -RADIUS; i <= RADIUS; i++)
+    for (let j = -RADIUS; j <= RADIUS; j++)
+      need.add((pcx + i) + ',' + (pcz + j));
+
+  for (const [k, ch] of chunks) {
+    if (!need.has(k)) { scene.remove(ch.group); chunks.delete(k); }
+  }
+  for (const k of need) {
+    if (!chunks.has(k)) {
+      const [x, z] = k.split(',').map(Number);
+      chunks.set(k, buildChunk(x, z));
+    }
+  }
+}
+function rebuildAll() {
+  for (const [, ch] of chunks) scene.remove(ch.group);
+  chunks.clear(); curCX = curCZ = null;
+  updateChunks();
+}
+
+/* ═══════ 9. THỜI TIẾT ═══════ */
+const RAIN_COUNT = 800;
+const rainGeo = new THREE.BufferGeometry();
+const rainPos = new Float32Array(RAIN_COUNT * 3);
+for (let i = 0; i < RAIN_COUNT; i++) {
+  rainPos[i*3] = (Math.random() - 0.5) * 40;
+  rainPos[i*3+1] = Math.random() * 20;
+  rainPos[i*3+2] = (Math.random() - 0.5) * 40;
+}
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const rain = new THREE.Points(rainGeo, new THREE.PointsMaterial({ color: 0xbfd8ff, size: 0.1, transparent: true, opacity: 0.6 }));
+rain.visible = false; scene.add(rain);
+
+const SNOW_COUNT = 600;
+const snowGeo = new THREE.BufferGeometry();
+const snowPos = new Float32Array(SNOW_COUNT * 3);
+for (let i = 0; i < SNOW_COUNT; i++) {
+  snowPos[i*3] = (Math.random() - 0.5) * 40;
+  snowPos[i*3+1] = Math.random() * 20;
+  snowPos[i*3+2] = (Math.random() - 0.5) * 40;
+}
+snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+const snow = new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.2, transparent: true, opacity: 0.9 }));
+snow.visible = false; scene.add(snow);
+
+function updateWeather(dt, t) {
+  if (rain.visible) {
+    rain.position.set(player.x, 0, player.z);
+    const p = rainGeo.attributes.position.array;
+    for (let i = 0; i < RAIN_COUNT; i++) {
+      p[i*3+1] -= 30 * dt;
+      if (p[i*3+1] < 0) { p[i*3] = (Math.random() - 0.5) * 40; p[i*3+1] = 20; p[i*3+2] = (Math.random() - 0.5) * 40; }
+    }
+    rainGeo.attributes.position.needsUpdate = true;
+  }
+  if (snow.visible) {
+    snow.position.set(player.x, 0, player.z);
+    const p = snowGeo.attributes.position.array;
+    for (let i = 0; i < SNOW_COUNT; i++) {
+      p[i*3+1] -= 2 * dt;
+      p[i*3] += Math.sin(t + i) * 0.5 * dt;
+      if (p[i*3+1] < 0) { p[i*3] = (Math.random() - 0.5) * 40; p[i*3+1] = 20; p[i*3+2] = (Math.random() - 0.5) * 40; }
+    }
+    snowGeo.attributes.position.needsUpdate = true;
+  }
+}
+
+/* ═══════ 10. BẦU TRỜI THEO GIỜ ═══════ */
+const C_DAY_T = new THREE.Color(0x2a6fd6), C_NIGHT_T = new THREE.Color(0x040812), C_DUSK_T = new THREE.Color(0x4a2a6a);
+const C_DAY_B = new THREE.Color(0xbcd8f0), C_NIGHT_B = new THREE.Color(0x0a1225), C_DUSK_B = new THREE.Color(0xff8855);
+const C_SUN_D = new THREE.Color(0xfff2cc), C_SUN_K = new THREE.Color(0xff5522);
+const _t = new THREE.Color(), _b = new THREE.Color(), _s = new THREE.Color(), _d = new THREE.Vector3();
+
+function updateSky(hour) {
+  const ang = ((hour - 6) / 12) * Math.PI;
+  _d.set(Math.cos(ang), Math.sin(ang), 0.28).normalize();
+  const dF = THREE.MathUtils.smoothstep(_d.y, -0.15, 0.25);
+  const kF = Math.exp(-Math.pow((_d.y - 0.05) / 0.18, 2));
+
+  _t.copy(C_NIGHT_T).lerp(C_DAY_T, dF).lerp(C_DUSK_T, kF * 0.5);
+  _b.copy(C_NIGHT_B).lerp(C_DAY_B, dF).lerp(C_DUSK_B, kF * 0.7);
+  _s.copy(C_SUN_D).lerp(C_SUN_K, kF);
+
+  skyU.uTop.value.copy(_t); skyU.uBottom.value.copy(_b); skyU.uSunColor.value.copy(_s);
+  skyU.uSunDir.value.copy(_d); skyU.uStars.value = 1 - dF;
+
+  scene.fog.color.copy(_b).lerp(_t, 0.3);
+  sunLight.position.copy(_d).multiplyScalar(100);
+  sunLight.intensity = 0.1 + 2.0 * dF;
+  hemiLight.intensity = 0.1 + 0.6 * dF;
+}
+
+/* ═══════ 11. UI MENU ═══════ */
+const menuEl = document.getElementById('menu');
+const timeSlider = document.getElementById('timeSlider');
+const timeLabel = document.getElementById('timeLabel');
+const auroraBtn = document.getElementById('auroraBtn');
+const fpsEl = document.getElementById('fps');
+
+function toggleMenu() { menuEl.classList.toggle('hidden'); }
+function updateTimeLabel() {
+  const h = Math.floor(state.hour) % 24;
+  const m = Math.floor((state.hour - Math.floor(state.hour)) * 60);
+  timeLabel.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+  if (!state.autoTime) timeSlider.value = state.hour;
+}
+
+document.querySelectorAll('[data-weather]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.weather = btn.dataset.weather;
+    document.querySelectorAll('[data-weather]').forEach(b => b.classList.toggle('active', b === btn));
+    rain.visible = state.weather === 'rain'; snow.visible = state.weather === 'snow';
+  });
+});
+
+document.querySelectorAll('[data-season]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.season = btn.dataset.season;
+    document.querySelectorAll('[data-season]').forEach(b => b.classList.toggle('active', b === btn));
+    const S = SEASONS[state.season];
+    grassMat.color.setHex(S.grass); foliageMat.color.setHex(S.foliage); groundMat.color.setHex(S.ground);
+    rebuildAll();
+  });
+});
+
+timeSlider.addEventListener('input', () => {
+  state.hour = parseFloat(timeSlider.value); state.autoTime = false;
+  document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('active'));
+  updateTimeLabel();
+});
+
+document.querySelectorAll('[data-time]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.time;
+    if (t === 'day') { state.hour = 12; state.autoTime = false; }
+    else if (t === 'night') { state.hour = 22; state.autoTime = false; }
+    else { state.autoTime = true; }
+    document.querySelectorAll('[data-time]').forEach(b => b.classList.toggle('active', b === btn));
+    updateTimeLabel();
+  });
+});
+
+auroraBtn.addEventListener('click', () => {
+  state.aurora = !state.aurora;
+  auroraBtn.classList.toggle('active', state.aurora);
+  auroraBtn.textContent = state.aurora ? 'Đang bật' : 'Bật / Tắt';
+});
+
+/* ═══════ 12. ĐIỀU KHIỂN ═══════ */
+let mouseDrag = false, mX = 0, mY = 0;
+canvas.addEventListener('mousedown', e => { mouseDrag = true; mX = e.clientX; mY = e.clientY; });
+window.addEventListener('mousemove', e => {
+  if (!mouseDrag) return;
+  player.yaw -= (e.clientX - mX) * 0.005; player.pitch -= (e.clientY - mY) * 0.005;
+  player.pitch = Math.max(-1.5, Math.min(1.5, player.pitch));
+  mX = e.clientX; mY = e.clientY;
+});
+window.addEventListener('mouseup', () => mouseDrag = false);
+
+let tId = null, tX = 0, tY = 0, tapC = 0, tapT = null;
+function handleTap() {
+  tapC++; if (tapT) clearTimeout(tapT);
+  tapT = setTimeout(() => tapC = 0, 800);
+  if (tapC >= 3) { tapC = 0; clearTimeout(tapT); toggleMenu(); }
+}
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 3) { tId = null; handleTap(); e.preventDefault(); return; }
+  if (e.touches.length === 1 && tId === null) { tId = e.touches[0].identifier; tX = e.touches[0].clientX; tY = e.touches[0].clientY; }
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length >= 2 || tId === null) return;
+  for (const t of e.touches) {
+    if (t.identifier === tId) {
+      player.yaw -= (t.clientX - tX) * 0.008; player.pitch -= (t.clientY - tY) * 0.008;
+      player.pitch = Math.max(-1.5, Math.min(1.5, player.pitch));
+      tX = t.clientX; tY = t.clientY; break;
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchend', e => {
+  if (tId !== null) { let still = false; for (const t of e.touches) if (t.identifier === tId) still = true; if (!still) tId = null; }
+});
+
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'KeyM') toggleMenu(); });
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+/* ═══════ 13. VÒNG LẶP RENDER ═══════ */
+let lastT = performance.now(), fpsC = 0, fpsClock = performance.now(), totalT = 0;
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min((now - lastT) / 1000, 0.05); lastT = now; totalT += dt;
+
+  const fX = -Math.sin(player.yaw), fZ = -Math.cos(player.yaw);
+  const rX = Math.cos(player.yaw), rZ = -Math.sin(player.yaw);
+  let mx = 0, mz = 0;
+  if (keys['KeyW'] || keys['ArrowUp']) mz += 1;
+  if (keys['KeyS'] || keys['ArrowDown']) mz -= 1;
+  if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+  if (mx || mz) {
+    const L = Math.hypot(mx, mz); mx /= L; mz /= L;
+    player.x += (fX * mz + rX * mx) * player.speed * dt;
+    player.z += (fZ * mz + rZ * mx) * player.speed * dt;
+    updateChunks();
+  }
+
+  camera.position.set(player.x, player.eye, player.z);
+  camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+
+  if (state.autoTime) { state.hour = (state.hour + dt * 0.2) % 24; updateTimeLabel(); }
+  updateSky(state.hour);
+  timeU.value = totalT; skyU.uTime.value = totalT;
+  skyU.uAurora.value = state.aurora ? 1 : 0;
+
+  windU.value.set(1.0 + Math.sin(totalT * 0.3) * 0.3, 0.35 + Math.cos(totalT * 0.2) * 0.2);
+  updateWeather(dt, totalT);
+
+  renderer.render(scene, camera);
+
+  fpsC++;
+  if (now - fpsClock >= 500) {
+    fpsEl.textContent = Math.round(fpsC * 1000 / (now - fpsClock));
+    fpsC = 0; fpsClock = now;
+  }
+}
+
+/* ═══════ 14. KHỞI TẠO ═══════ */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+});
+
+updateTimeLabel();
+updateChunks();
+updateSky(state.hour);
+requestAnimationFrame(frame);
+</script>
 </body>
 </html>
