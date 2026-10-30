@@ -1,46 +1,104 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#000000" />
-<title>Galaxy · Orbiting Scratches</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Vườn Hoa Vô Tận - FOV 120°</title>
 <style>
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    height: 100%;
-    height: 100dvh;
-    overflow: hidden;
-    background: #000;
-    touch-action: none;
-    overscroll-behavior: none;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  canvas { display: block; touch-action: none; outline: none; }
-  #hint {
-    position: fixed;
-    left: 50%;
-    bottom: calc(14px + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    font: 12px/1.4 system-ui, -apple-system, sans-serif;
-    color: #7fa8d8;
-    letter-spacing: .5px;
-    opacity: .65;
-    pointer-events: none;
-    user-select: none;
-    text-align: center;
-    white-space: nowrap;
-    padding: 0 12px;
-  }
-  @media (max-width: 600px) { #hint { font-size: 11px; } }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#05080f;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none}
+  #scene{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  #scene:active{cursor:grabbing}
+
+  #hud{position:fixed;top:10px;left:12px;color:#fff;font-size:13px;line-height:1.55;
+    text-shadow:0 1px 4px #000;pointer-events:none;z-index:10}
+  #hud b{color:#8fffb0;font-weight:600}
+  #hint{opacity:.75;font-size:11.5px;max-width:260px}
+
+  #menu{position:fixed;right:12px;bottom:12px;width:300px;max-height:82vh;overflow-y:auto;
+    background:rgba(10,16,26,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 16px;
+    color:#eaf2ff;font-size:13px;box-shadow:0 16px 50px rgba(0,0,0,.55);
+    transform-origin:bottom right;transition:opacity .25s ease,transform .25s ease;z-index:20}
+  #menu.hidden{opacity:0;transform:scale(.86) translateY(24px);pointer-events:none}
+  #menu::-webkit-scrollbar{width:6px}
+  #menu::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
+
+  .title{font-weight:700;font-size:14px;letter-spacing:.5px;margin-bottom:10px;
+    background:linear-gradient(90deg,#ff9ecb,#9ad0ff,#b6ff9e);-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  .group{margin-bottom:12px}
+  .label{font-size:11.5px;opacity:.7;margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
+  .btns{display:flex;flex-wrap:wrap;gap:6px}
+  .btn{flex:1 1 auto;min-width:64px;padding:8px 6px;border-radius:10px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dfe9ff;
+    font-size:12px;font-family:inherit;transition:.15s}
+  .btn:hover{background:rgba(255,255,255,.14)}
+  .btn.active{background:linear-gradient(135deg,#4fa8ff,#8f6bff);border-color:transparent;
+    color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(90,140,255,.45)}
+
+  input[type=range]{width:100%;height:24px;margin:2px 0 6px;background:transparent;
+    -webkit-appearance:none;appearance:none;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;
+    background:linear-gradient(90deg,#1a2a45,#3b7fd4,#ffd166,#3b7fd4,#1a2a45)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+    border-radius:50%;background:#fff;margin-top:-6px;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+  input[type=range]::-moz-range-track{height:6px;border-radius:3px;
+    background:linear-gradient(90deg,#1a2a45,#3b7fd4,#ffd166,#3b7fd4,#1a2a45)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:#fff}
+
+  @media (max-width:480px){#menu{width:calc(100% - 24px);max-height:58vh}}
 </style>
 </head>
 <body>
-<div id="hint"></div>
+<canvas id="scene"></canvas>
+
+<div id="hud">
+  <div><b>FPS:</b> <span id="fps">--</span> / 120</div>
+  <div id="hint">WASD / mũi tên di chuyển · Kéo chuột hoặc chạm để nhìn ·<br>
+  <b>Chạm 3 ngón 3 lần</b> để mở menu (hoặc phím M)</div>
+</div>
+
+<div id="menu" class="hidden">
+  <div class="title">🌷 TÙY CHỈNH KHU VƯỜN</div>
+
+  <div class="group">
+    <div class="label">Thời tiết</div>
+    <div class="btns">
+      <button class="btn active" data-weather="clear">☀️ Nắng</button>
+      <button class="btn" data-weather="rain">🌧️ Mưa</button>
+      <button class="btn" data-weather="snow">❄️ Tuyết</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="label">Mùa</div>
+    <div class="btns">
+      <button class="btn active" data-season="spring">🌸 Xuân</button>
+      <button class="btn" data-season="summer">🌻 Hạ</button>
+      <button class="btn" data-season="autumn">🍂 Thu</button>
+      <button class="btn" data-season="winter">❄️ Đông</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="label">Thời gian — <span id="timeLabel">12:00</span></div>
+    <input id="timeSlider" type="range" min="0" max="24" step="0.05" value="12" />
+    <div class="btns">
+      <button class="btn" data-time="day">🌞 Ngày</button>
+      <button class="btn" data-time="night">🌙 Đêm</button>
+      <button class="btn" data-time="auto">🔄 Tự động</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="label">Cực quang</div>
+    <div class="btns">
+      <button class="btn" id="auroraBtn">Tắt</button>
+    </div>
+  </div>
+</div>
 
 <script type="importmap">
 {
@@ -50,7 +108,6 @@
   }
 }
 </script>
-
-<script type="module" src="./main.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
